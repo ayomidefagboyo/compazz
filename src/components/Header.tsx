@@ -1,16 +1,17 @@
-import { useState } from 'react';
 import { DynamicWidget } from '../contexts/DynamicContext';
 import { useAuth } from '../hooks/useAuth';
-import { Wallet, Info } from 'lucide-react';
+import { Wallet, Info, HelpCircle, Gift } from 'lucide-react';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
-import { HowItWorksModal } from './HowItWorksModal';
-import { OnChainInfo } from './OnChainInfo';
 
-export function Header() {
+interface HeaderProps {
+  onShowHowItWorks: () => void;
+  onShowReferEarn: () => void;
+  onShowOnChainInfo: () => void;
+}
+
+export function Header({ onShowHowItWorks, onShowReferEarn, onShowOnChainInfo }: HeaderProps) {
   const { user, primaryWallet, handleLogOut, setShowAuthFlow } = useDynamicContext();
   const { isConnected } = useAuth();
-  const [showHowItWorks, setShowHowItWorks] = useState(false);
-  const [showOnChainInfo, setShowOnChainInfo] = useState(false);
 
   const isLoggedIn = !!user || !!primaryWallet;
 
@@ -22,8 +23,11 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-xl border-b border-border">
       <div className="w-full px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 flex items-center justify-center">
+          <button
+            onClick={() => window.location.href = '/'}
+            className="flex items-center hover:opacity-80 transition-opacity"
+          >
+            <div className="w-12 h-12 flex items-center justify-center">
               <img
                 src="/compazz-logo.png"
                 alt="Compazz Logo"
@@ -32,19 +36,57 @@ export function Header() {
             </div>
             <div>
               <h1 className="text-2xl font-light text-white tracking-tight">Compazz</h1>
-              <p className="text-sm text-light">Live Stream Predictions</p>
             </div>
-          </div>
+          </button>
 
-          <div className="flex items-center space-x-4">
+          {/* Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
             <button
-              onClick={() => setShowOnChainInfo(true)}
-              className="hidden md:flex items-center space-x-2 text-light hover:text-white transition-colors text-sm font-light"
+              onClick={onShowHowItWorks}
+              className="flex items-center space-x-2 text-light hover:text-white transition-colors text-sm font-light"
+            >
+              <HelpCircle className="w-4 h-4" />
+              <span>How it Works</span>
+            </button>
+            <button
+              onClick={onShowReferEarn}
+              className="flex items-center space-x-2 text-light hover:text-white transition-colors text-sm font-light"
+            >
+              <Gift className="w-4 h-4" />
+              <span>Refer & Earn</span>
+            </button>
+            <button
+              onClick={onShowOnChainInfo}
+              className="flex items-center space-x-2 text-light hover:text-white transition-colors text-sm font-light"
             >
               <Info className="w-4 h-4" />
               <span>Stats</span>
             </button>
+          </nav>
 
+          {/* Mobile Navigation */}
+          <nav className="md:hidden flex items-center space-x-4">
+            <button
+              onClick={onShowHowItWorks}
+              className="text-light hover:text-white transition-colors"
+            >
+              <HelpCircle className="w-4 h-4" />
+            </button>
+            <button
+              onClick={onShowReferEarn}
+              className="text-light hover:text-white transition-colors"
+            >
+              <Gift className="w-4 h-4" />
+            </button>
+            <button
+              onClick={onShowOnChainInfo}
+              className="text-light hover:text-white transition-colors"
+            >
+              <Info className="w-4 h-4" />
+            </button>
+          </nav>
+
+          <div className="flex items-center space-x-4">
             {isLoggedIn || isConnected ? (
               <div className="flex items-center space-x-4">
                 <DynamicWidget />
@@ -69,10 +111,6 @@ export function Header() {
         </div>
       </div>
 
-      <OnChainInfo
-        isOpen={showOnChainInfo}
-        onClose={() => setShowOnChainInfo(false)}
-      />
     </header>
   );
 }

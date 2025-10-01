@@ -44,8 +44,14 @@ export function OnChainInfo({ isOpen, onClose }: OnChainInfoProps) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-xl">
-      <div className="card max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl"
+      onClick={onClose}
+    >
+      <div
+        className="card max-w-4xl w-full max-h-[90vh] overflow-y-auto my-4"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between px-8 py-6 border-b border-border">
           <h2 className="text-3xl font-light text-white">On-Chain Solana Integration</h2>
           <button

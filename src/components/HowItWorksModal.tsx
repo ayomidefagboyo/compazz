@@ -1,4 +1,4 @@
-import { X, Users, TrendingUp, Coins, Vote, Award, Share2 } from 'lucide-react';
+import { X, Bot, Users, DollarSign, TrendingUp, Award } from 'lucide-react';
 
 interface HowItWorksModalProps {
   isOpen: boolean;
@@ -10,49 +10,49 @@ export function HowItWorksModal({ isOpen, onClose }: HowItWorksModalProps) {
 
   const steps = [
     {
-      icon: <Users className="w-8 h-8" />,
-      title: "Join a Pool",
-      description: "Connect your wallet and join exclusive trading pools with other sophisticated traders.",
-      details: "Choose from curated pools based on your risk tolerance and trading preferences."
+      icon: <Bot className="w-8 h-8" />,
+      title: "Choose Trading Agents",
+      description: "Browse AI-powered trading agents and successful wallet trackers to follow.",
+      details: "Filter by performance, risk level, fees, and strategy type. Each agent shows verified track record."
     },
     {
-      icon: <Coins className="w-8 h-8" />,
-      title: "Deposit SOL",
-      description: "Deposit SOL into your chosen pool to start earning from AI-driven trades.",
-      details: "Your deposit determines your voting power and share of the pool's profits."
+      icon: <DollarSign className="w-8 h-8" />,
+      title: "Subscribe with SOL",
+      description: "Deposit SOL to subscribe to agents and automatically copy their trading strategies.",
+      details: "Minimum subscription starts at 10 SOL. Your funds remain in your control via smart contracts."
     },
     {
       icon: <TrendingUp className="w-8 h-8" />,
-      title: "AI Trading",
-      description: "Our advanced AI algorithms execute trades on your behalf using the pool's funds.",
-      details: "24/7 automated trading with sophisticated risk management and market analysis."
+      title: "Auto-Copy Trades",
+      description: "Agents automatically execute trades on your behalf using your subscribed funds.",
+      details: "Real-time trade notifications, position tracking, and transparent fee deduction."
     },
     {
-      icon: <Vote className="w-8 h-8" />,
-      title: "Govern & Vote",
-      description: "Participate in pool governance by voting on trading strategies and proposals.",
-      details: "Your voting power is proportional to your deposit amount in the pool."
+      icon: <Users className="w-8 h-8" />,
+      title: "Create Your Own Agent",
+      description: "Create wallet tracker agents by entering any Solana wallet address to copy.",
+      details: "Set your own fees (1-5%) and earn from subscribers who follow your tracked wallets."
     },
     {
       icon: <Award className="w-8 h-8" />,
-      title: "Earn Rewards",
-      description: "Earn your share of profits and unlock achievements as you grow your portfolio.",
-      details: "Track your performance on the leaderboard and compete with other traders."
+      title: "Earn Profits & Fees",
+      description: "Profit from successful trades and earn fees if others subscribe to your agents.",
+      details: "Automatic profit distribution, fee collection, and performance tracking dashboard."
     }
   ];
 
-  const referralBenefits = [
-    "Earn 5% of your referrals' trading fees",
-    "Get exclusive access to premium pools",
-    "Unlock special achievement badges",
-    "Priority support and early feature access"
-  ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-xl">
-      <div className="card max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl"
+      onClick={onClose}
+    >
+      <div
+        className="card max-w-4xl w-full max-h-[90vh] overflow-y-auto my-4"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between px-8 py-6 border-b border-border">
-          <h2 className="text-3xl font-light text-white">How Compazz Works</h2>
+          <h2 className="text-3xl font-light text-white">How Trading Agents Work</h2>
           <button
             onClick={onClose}
             className="text-light hover:text-white transition-colors p-2"
@@ -86,62 +86,20 @@ export function HowItWorksModal({ isOpen, onClose }: HowItWorksModalProps) {
             </div>
           </div>
 
-          {/* Referral System */}
-          <div className="border-t border-border pt-8">
-            <div className="flex items-center space-x-3 mb-6">
-              <Share2 className="w-6 h-6 text-accent" />
-              <h3 className="text-2xl font-light text-white">Referral Program</h3>
-            </div>
-            <p className="text-lg text-light font-light mb-6">
-              Invite friends and earn rewards when they join Compazz and start trading.
-            </p>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-dark-gray rounded-xl p-6">
-                <h4 className="text-lg font-light text-white mb-4">Your Benefits</h4>
-                <ul className="space-y-3">
-                  {referralBenefits.map((benefit, index) => (
-                    <li key={index} className="flex items-center space-x-3 text-light font-light">
-                      <div className="w-2 h-2 bg-accent rounded-full"></div>
-                      <span>{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              
-              <div className="bg-dark-gray rounded-xl p-6">
-                <h4 className="text-lg font-light text-white mb-4">Referral Code</h4>
-                <div className="bg-charcoal border border-border rounded-lg p-4 mb-4">
-                  <code className="text-accent font-mono text-lg">COMPAZZ2024</code>
-                </div>
-                <button className="w-full px-4 py-3 btn-primary text-lg font-light rounded-xl">
-                  Copy Referral Link
-                </button>
-              </div>
-            </div>
-          </div>
 
           {/* Risk Disclaimer */}
           <div className="border-t border-border pt-8">
             <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-6">
               <h4 className="text-lg font-light text-red-400 mb-3">Risk Disclaimer</h4>
               <p className="text-sm text-light font-light leading-relaxed">
-                Trading involves substantial risk of loss and is not suitable for all investors. 
+                Trading involves substantial risk of loss and is not suitable for all users.
                 Past performance is not indicative of future results. Only invest what you can afford to lose.
-                Compazz uses AI-driven trading strategies, but all trading involves risk of loss.
+                All trading agents carry risk and profits are not guaranteed. Carefully review agent performance and fees before subscribing.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="px-8 py-6 border-t border-border">
-          <button
-            onClick={onClose}
-            className="w-full px-8 py-4 btn-primary text-lg font-light rounded-xl"
-          >
-            Get Started
-          </button>
-        </div>
       </div>
     </div>
   );

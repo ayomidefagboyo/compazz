@@ -320,5 +320,140 @@ class SolanaIntegrationService {
 // Export singleton instance
 export const solanaIntegrationService = new SolanaIntegrationService();
 
+// Trading Agents Solana Integration
+export interface TradingAgentPDA {
+  agentId: string;
+  authority: PublicKey;
+  vaultAccount: PublicKey;
+  totalAUM: number;
+  subscriberCount: number;
+  feePercentage: number;
+  agentType: 'platform' | 'wallet_tracker' | 'yield' | 'meme';
+  isActive: boolean;
+  performance30d: number;
+}
+
+export interface AgentSubscription {
+  subscriber: PublicKey;
+  agentId: string;
+  depositAmount: number;
+  subscriptionDate: number;
+  isActive: boolean;
+}
+
+// Hook for trading agents Solana operations
+export function useTradingAgents() {
+  const subscribeToAgent = async (
+    agentId: string,
+    amount: number
+  ): Promise<string> => {
+    try {
+      console.log(`Subscribing to agent ${agentId} with ${amount} SOL`);
+
+      // This would interact with the trading agent Solana program
+      // For now, we'll simulate the transaction
+      const txId = `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      // Add delay to simulate network confirmation
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      console.log(`Subscription confirmed: ${txId}`);
+      return txId;
+    } catch (error) {
+      console.error('Error subscribing to agent:', error);
+      throw error;
+    }
+  };
+
+  const unsubscribeFromAgent = async (
+    agentId: string
+  ): Promise<string> => {
+    try {
+      console.log(`Unsubscribing from agent ${agentId}`);
+
+      // This would interact with the trading agent Solana program
+      const txId = `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      // Add delay to simulate network confirmation
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      console.log(`Unsubscription confirmed: ${txId}`);
+      return txId;
+    } catch (error) {
+      console.error('Error unsubscribing from agent:', error);
+      throw error;
+    }
+  };
+
+  const createWalletTrackerAgent = async (
+    walletToTrack: string,
+    name: string,
+    description: string,
+    feePercentage: number
+  ): Promise<string> => {
+    try {
+      console.log(`Creating wallet tracker agent for wallet: ${walletToTrack}`);
+
+      // This would create the actual Solana program account
+      const agentId = `agent_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const txId = `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      // Add delay to simulate network confirmation
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      console.log(`Agent created with ID: ${agentId}, Transaction: ${txId}`);
+      return agentId;
+    } catch (error) {
+      console.error('Error creating wallet tracker agent:', error);
+      throw error;
+    }
+  };
+
+  const getUserSubscriptions = async (
+    userAddress: PublicKey
+  ): Promise<AgentSubscription[]> => {
+    try {
+      // This would fetch the user's subscriptions from the Solana program
+      // For now, we'll return mock data
+      return [
+        {
+          subscriber: userAddress,
+          agentId: '1',
+          depositAmount: 100,
+          subscriptionDate: Date.now() - 86400000,
+          isActive: true
+        }
+      ];
+    } catch (error) {
+      console.error('Error getting user subscriptions:', error);
+      throw error;
+    }
+  };
+
+  const getAgentPerformance = async (
+    agentId: string
+  ): Promise<{ totalReturn: number; weeklyReturns: number[] }> => {
+    try {
+      // This would fetch the agent's performance from the Solana program
+      // For now, we'll return mock data
+      return {
+        totalReturn: Math.random() * 50 + 10, // 10-60% return
+        weeklyReturns: Array.from({ length: 4 }, () => Math.random() * 20 - 5) // -5% to 15% weekly
+      };
+    } catch (error) {
+      console.error('Error getting agent performance:', error);
+      throw error;
+    }
+  };
+
+  return {
+    subscribeToAgent,
+    unsubscribeFromAgent,
+    createWalletTrackerAgent,
+    getUserSubscriptions,
+    getAgentPerformance
+  };
+}
+
 // Export types
-export type { PoolConfig, TradeSignal, PoolState };
+export type { PoolConfig, TradeSignal, PoolState, TradingAgentPDA, AgentSubscription };
