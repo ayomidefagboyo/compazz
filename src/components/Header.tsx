@@ -10,13 +10,33 @@ interface HeaderProps {
 }
 
 export function Header({ onShowHowItWorks, onShowReferEarn, onShowOnChainInfo }: HeaderProps) {
-  const { user, primaryWallet, handleLogOut, setShowAuthFlow } = useDynamicContext();
+  const dynamicContext = useDynamicContext();
+  const { user, primaryWallet, handleLogOut, setShowAuthFlow } = dynamicContext;
   const { isConnected } = useAuth();
+
+  // Debug logging for production
+  console.log('Header: Dynamic context available:', !!dynamicContext);
+  console.log('Header: setShowAuthFlow available:', !!setShowAuthFlow);
+  console.log('Header: user:', !!user);
+  console.log('Header: primaryWallet:', !!primaryWallet);
 
   const isLoggedIn = !!user || !!primaryWallet;
 
   const handleConnectClick = () => {
-    setShowAuthFlow(true);
+    console.log('Header: Connect button clicked');
+    if (!setShowAuthFlow) {
+      console.error('Header: setShowAuthFlow is not available - Dynamic context may not be initialized');
+      alert('Wallet connection is not available. Please refresh the page and try again.');
+      return;
+    }
+
+    try {
+      console.log('Header: Calling setShowAuthFlow(true)');
+      setShowAuthFlow(true);
+    } catch (error) {
+      console.error('Header: Error calling setShowAuthFlow:', error);
+      alert('Error connecting wallet. Please try again.');
+    }
   };
 
   return (
