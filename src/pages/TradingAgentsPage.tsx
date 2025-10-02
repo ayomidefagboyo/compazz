@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTradingAgents } from '../services/solanaIntegration';
 import { useTelegram } from '../contexts/TelegramContext';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { Bot, Users, DollarSign, Plus, Shield, MessageCircle, Vote, ArrowUpRight } from 'lucide-react';
 
 // Mock trading agents data
@@ -166,6 +167,7 @@ const mockSocialFunds = [
 export function TradingAgentsPage() {
   const navigate = useNavigate();
   const { isConnected } = useAuth();
+  const { primaryWallet, setShowAuthFlow } = useDynamicContext();
   const { subscribeToAgent, createWalletTrackerAgent } = useTradingAgents();
   const {
     isAuthenticated: isTelegramAuthenticated,
@@ -274,11 +276,17 @@ export function TradingAgentsPage() {
             <span>Create Agent</span>
           </button>
           <button
-            onClick={() => setShowCreateFund(true)}
+            onClick={() => {
+              if (!primaryWallet) {
+                setShowAuthFlow?.(true);
+              } else {
+                setShowCreateFund(true);
+              }
+            }}
             className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors inline-flex items-center space-x-2"
           >
             <MessageCircle className="w-4 h-4" />
-            <span>Create Fund</span>
+            <span>{primaryWallet ? 'Create Fund' : 'Connect to Create Fund'}</span>
           </button>
         </div>
 
@@ -513,19 +521,25 @@ export function TradingAgentsPage() {
           )}
 
           {/* Create Fund Modal */}
-          {showCreateFund && (
+          {showCreateFund && primaryWallet && (
             <CreateFundModal
               isOpen={showCreateFund}
               onClose={() => setShowCreateFund(false)}
+              walletAddress={primaryWallet.address}
               onCreateFund={async (name, description, strategy, minContribution, maxMembers, managementFee, performanceFee, telegramOption, existingGroupId, groupInviteLink) => {
                 if (!isTelegramAuthenticated) {
                   await loginWithTelegram();
                 }
 
+                if (!primaryWallet?.address) {
+                  throw new Error('Wallet not connected');
+                }
+
                 // Import the new fund management service
                 const { fundManagementService } = await import('../services/fundManagement');
+                const { PublicKey } = await import('@solana/web3.js');
 
-                // Create fund using the new service
+                // Create fund using the new service with actual wallet
                 const result = await fundManagementService.createFund({
                   name,
                   description,
@@ -534,7 +548,7 @@ export function TradingAgentsPage() {
                   maxMembers,
                   managementFee,
                   performanceFee,
-                  creator: new (await import('@solana/web3.js')).PublicKey('11111111111111111111111111111111'), // Mock creator
+                  creator: new PublicKey(primaryWallet.address),
                   telegramOption,
                   existingGroupId,
                   inviteLink: groupInviteLink
@@ -675,10 +689,12 @@ function CreateAgentModal({
 function CreateFundModal({
   isOpen,
   onClose,
+  walletAddress,
   onCreateFund
 }: {
   isOpen: boolean;
   onClose: () => void;
+  walletAddress: string;
   onCreateFund: (name: string, description: string, strategy: string, minContribution: number, maxMembers: number, managementFee: number, performanceFee: number, telegramOption: 'create_new' | 'use_existing', existingGroupId?: string, groupInviteLink?: string) => Promise<string>;
 }) {
   const [fundName, setFundName] = useState('');
@@ -749,6 +765,12 @@ function CreateFundModal({
 
         {/* Form */}
         <div className="p-6 space-y-6">
+          {/* Wallet Info */}
+          <div className="bg-dark-gray border border-border rounded-lg p-4">
+            <div className="text-xs text-light mb-1">Fund Creator (Your Wallet)</div>
+            <div className="text-sm text-white font-mono truncate">{walletAddress}</div>
+          </div>
+
           {/* Basic Info */}
           <div className="space-y-4">
             <div>

@@ -7,4 +7,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  define: {
+    __WS_TOKEN__: JSON.stringify(''),
+  },
 });

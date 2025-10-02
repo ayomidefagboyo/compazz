@@ -263,6 +263,67 @@ export class SolanaFundsService {
   }
 
   /**
+   * Fund creator executes a trade directly (bypassing voting)
+   * Only the fund authority (creator) can call this
+   */
+  async executeFundCreatorTrade(
+    fundAddress: PublicKey,
+    action: 'Buy' | 'Sell' | 'Swap' | 'Hold',
+    amount: string,
+    token: string,
+    reasoning: string,
+    creator: Keypair
+  ): Promise<string> {
+    const fund = await this.getFund(fundAddress);
+
+    // Verify creator is the fund authority
+    if (!fund.authority.equals(creator.publicKey)) {
+      throw new Error('Only fund creator can execute direct trades');
+    }
+
+    const tradeAction = { [action.toLowerCase()]: {} };
+
+    // Create a special proposal that's immediately executed
+    const [proposalPda] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from('proposal'),
+        fundAddress.toBuffer(),
+        fund.proposalCount.toBuffer('le', 8)
+      ],
+      this.program.programId
+    );
+
+    const [memberPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('member'), fundAddress.toBuffer(), creator.publicKey.toBuffer()],
+      this.program.programId
+    );
+
+    // Create and immediately execute the proposal
+    const tx = await this.program.methods
+      .createTradeProposal(
+        tradeAction,
+        amount,
+        token,
+        reasoning,
+        new BN(1) // 1 second voting period - immediately executable
+      )
+      .accounts({
+        fund: fundAddress,
+        proposal: proposalPda,
+        member: memberPda,
+        proposer: creator.publicKey,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([creator])
+      .rpc();
+
+    // Auto-execute after creation
+    await this.executeProposal(proposalPda);
+
+    return tx;
+  }
+
+  /**
    * Collect success fee from a fund (1% of profits)
    */
   async collectSuccessFee(
