@@ -278,7 +278,7 @@ export function TradingAgentsPage() {
             className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors inline-flex items-center space-x-2"
           >
             <MessageCircle className="w-4 h-4" />
-            <span>Create Social Fund</span>
+            <span>Create Fund</span>
           </button>
         </div>
 
@@ -740,7 +740,7 @@ function CreateFundModal({
             <div className="w-10 h-10 bg-blue-600/10 border border-blue-600/20 rounded-xl flex items-center justify-center">
               <MessageCircle className="w-5 h-5 text-blue-400" />
             </div>
-            <h3 className="text-xl font-light text-white">Create Social Fund</h3>
+            <h3 className="text-xl font-light text-white">Create Fund</h3>
           </div>
           <button onClick={onClose} className="text-light hover:text-white transition-colors">
             <Plus className="w-5 h-5 rotate-45" />
@@ -947,7 +947,7 @@ function CreateFundModal({
             disabled={!fundName || !description || isCreating}
             className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isCreating ? 'Creating Fund...' : 'Create Social Fund'}
+            {isCreating ? 'Creating Fund...' : 'Create Fund'}
           </button>
         </div>
       </div>
