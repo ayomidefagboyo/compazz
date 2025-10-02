@@ -11,20 +11,20 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
     "@dynamic-labs/sdk-react-core": "^4.34.0",
     "@dynamic-labs/solana": "^4.34.0",
     "@solana/web3.js": "^1.98.4",
     "@supabase/supabase-js": "^2.57.4",
+    "@vercel/node": "^3.2.1",
     "lucide-react": "^0.344.0",
     "node-fetch": "^3.3.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.9.3",
-    "rollup": "^4.52.3"
+    "react-router-dom": "^7.9.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
-    "@rollup/rollup-darwin-arm64": "^4.52.3",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",

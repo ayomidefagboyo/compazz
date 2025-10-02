@@ -2,14 +2,17 @@
 seeds = false
 skip-lint = false
 
+[toolchain]
+anchor_version = "0.29.0"
+
 [programs.localnet]
-compazz_funds = "11111111111111111111111111111111"
+compazz_funds = "CompazzFhXk57gk7TPQBnREn5X24q626eJjWdevnet11111"
 
 [programs.devnet]
-compazz_funds = "11111111111111111111111111111111"
+compazz_funds = "CompazzFhXk57gk7TPQBnREn5X24q626eJjWdevnet11111"
 
 [programs.mainnet]
-compazz_funds = "11111111111111111111111111111111"
+compazz_funds = "CompazzFhXk57gk7TPQBnREn5X24q626eJjWdevnet11111"
 
 [registry]
 url = "https://api.apr.dev"

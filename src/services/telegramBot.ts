@@ -35,7 +35,7 @@ class TelegramBotService {
     this.commands = new Map();
     this.apiUrl = `https://api.telegram.org/bot${config.token}`;
     this.connection = new Connection(import.meta.env?.VITE_SOLANA_RPC_URL || 'https://api.devnet.solana.com');
-    this.programId = new PublicKey('11111111111111111111111111111111'); // Default program ID
+    this.programId = new PublicKey('CompazzFhXk57gk7TPQBnREn5X24q626eJjWdevnet11111'); // Deployed program ID
     this.setupDefaultCommands();
   }
 

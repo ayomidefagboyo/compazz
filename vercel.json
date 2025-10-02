@@ -1,17 +1,8 @@
 {
-  "functions": {
-    "api/telegram-webhook.ts": {
-      "runtime": "@vercel/node"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     }
-  ],
-  "env": {
-    "TELEGRAM_BOT_TOKEN": "@telegram_bot_token",
-    "TELEGRAM_BOT_USERNAME": "@telegram_bot_username"
-  }
+  ]
 }

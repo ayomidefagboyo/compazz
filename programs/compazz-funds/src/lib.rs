@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
-declare_id!("11111111111111111111111111111111");
+declare_id!("CompazzFhXk57gk7TPQBnREn5X24q626eJjWdevnet11111");
 
 #[program]
 pub mod compazz_funds {

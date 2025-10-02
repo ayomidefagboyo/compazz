@@ -35,8 +35,8 @@ class FundManagementService {
   constructor() {
     this.connection = new Connection(import.meta.env?.VITE_SOLANA_RPC_URL || 'https://api.devnet.solana.com');
     this.botApiUrl = `https://api.telegram.org/bot${import.meta.env?.VITE_TELEGRAM_BOT_TOKEN}`;
-    // Default program ID - in production this would be the deployed program
-    this.programId = new PublicKey('11111111111111111111111111111111');
+    // Deployed Compazz Funds Program ID on Solana devnet
+    this.programId = new PublicKey('CompazzFhXk57gk7TPQBnREn5X24q626eJjWdevnet11111');
   }
 
   private initializeSolanaService(wallet: any): SolanaFundsService {
