@@ -22,11 +22,28 @@ pub mod compazz_funds {
         let fund = &mut ctx.accounts.fund;
         let clock = Clock::get()?;
 
+        // Platform fee: 0.1 SOL for fund creation
+        const PLATFORM_FEE: u64 = 100_000_000; // 0.1 SOL in lamports
+
+        // Transfer platform fee to platform treasury
+        let fee_transfer = anchor_lang::system_program::Transfer {
+            from: ctx.accounts.authority.to_account_info(),
+            to: ctx.accounts.platform_treasury.to_account_info(),
+        };
+
+        anchor_lang::system_program::transfer(
+            CpiContext::new(
+                ctx.accounts.system_program.to_account_info(),
+                fee_transfer,
+            ),
+            PLATFORM_FEE,
+        )?;
+
         fund.authority = ctx.accounts.authority.key();
-        fund.name = name;
+        fund.name = name.clone();
         fund.description = description;
         fund.strategy = strategy;
-        fund.telegram_group_id = telegram_group_id;
+        fund.telegram_group_id = telegram_group_id.clone();
         fund.min_contribution = min_contribution;
         fund.max_members = max_members;
         fund.management_fee = management_fee;
@@ -43,6 +60,7 @@ pub mod compazz_funds {
             authority: fund.authority,
             name: fund.name.clone(),
             telegram_group_id: fund.telegram_group_id.clone(),
+            platform_fee: PLATFORM_FEE,
         });
 
         Ok(())
@@ -61,7 +79,27 @@ pub mod compazz_funds {
         require!(amount >= fund.min_contribution, ErrorCode::InsufficientContribution);
         require!(fund.member_count < fund.max_members, ErrorCode::FundFull);
 
-        // Transfer SOL to fund vault
+        // Calculate platform transaction fee (0.2%)
+        let transaction_fee = amount * 20 / 10000; // 0.2% = 20/10000
+        let net_amount = amount - transaction_fee;
+
+        // Transfer platform fee to treasury
+        if transaction_fee > 0 {
+            let fee_transfer = anchor_lang::system_program::Transfer {
+                from: ctx.accounts.member_authority.to_account_info(),
+                to: ctx.accounts.platform_treasury.to_account_info(),
+            };
+
+            anchor_lang::system_program::transfer(
+                CpiContext::new(
+                    ctx.accounts.system_program.to_account_info(),
+                    fee_transfer,
+                ),
+                transaction_fee,
+            )?;
+        }
+
+        // Transfer remaining SOL to fund vault
         let transfer_instruction = anchor_lang::system_program::Transfer {
             from: ctx.accounts.member_authority.to_account_info(),
             to: ctx.accounts.fund_vault.to_account_info(),
@@ -72,7 +110,7 @@ pub mod compazz_funds {
                 ctx.accounts.system_program.to_account_info(),
                 transfer_instruction,
             ),
-            amount,
+            net_amount,
         )?;
 
         // Update member account
@@ -82,18 +120,19 @@ pub mod compazz_funds {
 
         member.fund = fund.key();
         member.authority = ctx.accounts.member_authority.key();
-        member.contribution += amount;
+        member.contribution += net_amount; // Track net contribution after fees
         member.telegram_user_id = telegram_user_id;
         member.joined_at = Clock::get()?.unix_timestamp;
         member.bump = *ctx.bumps.get("member").unwrap();
 
         // Update fund totals
-        fund.total_deposits += amount;
+        fund.total_deposits += net_amount;
 
         emit!(MemberJoined {
             fund: fund.key(),
             member: ctx.accounts.member_authority.key(),
-            amount,
+            amount: net_amount,
+            platform_fee: transaction_fee,
             telegram_user_id,
         });
 
@@ -240,6 +279,29 @@ pub mod compazz_funds {
         Ok(())
     }
 
+    /// Collect success fee (1% of profits)
+    pub fn collect_success_fee(
+        ctx: Context<CollectSuccessFee>,
+        profit_amount: u64,
+    ) -> Result<()> {
+        // Calculate 1% success fee
+        let success_fee = profit_amount / 100; // 1%
+
+        if success_fee > 0 {
+            // Transfer success fee from fund vault to platform treasury
+            **ctx.accounts.fund_vault.to_account_info().try_borrow_mut_lamports()? -= success_fee;
+            **ctx.accounts.platform_treasury.to_account_info().try_borrow_mut_lamports()? += success_fee;
+
+            emit!(SuccessFeeCollected {
+                fund: ctx.accounts.fund.key(),
+                profit_amount,
+                fee_amount: success_fee,
+            });
+        }
+
+        Ok(())
+    }
+
     /// Withdraw funds (if allowed)
     pub fn withdraw_funds(
         ctx: Context<WithdrawFunds>,
@@ -358,6 +420,11 @@ pub struct CreateFund<'info> {
 
     #[account(mut)]
     pub authority: Signer<'info>,
+
+    /// CHECK: Platform treasury account
+    #[account(mut)]
+    pub platform_treasury: AccountInfo<'info>,
+
     pub system_program: Program<'info, System>,
 }
 
@@ -385,6 +452,11 @@ pub struct JoinFund<'info> {
 
     #[account(mut)]
     pub member_authority: Signer<'info>,
+
+    /// CHECK: Platform treasury account
+    #[account(mut)]
+    pub platform_treasury: AccountInfo<'info>,
+
     pub system_program: Program<'info, System>,
 }
 
@@ -446,6 +518,23 @@ pub struct ExecuteProposal<'info> {
 }
 
 #[derive(Accounts)]
+pub struct CollectSuccessFee<'info> {
+    pub fund: Account<'info, Fund>,
+
+    /// CHECK: This is the fund's SOL vault
+    #[account(
+        mut,
+        seeds = [b"vault", fund.key().as_ref()],
+        bump
+    )]
+    pub fund_vault: AccountInfo<'info>,
+
+    /// CHECK: Platform treasury account
+    #[account(mut)]
+    pub platform_treasury: AccountInfo<'info>,
+}
+
+#[derive(Accounts)]
 pub struct WithdrawFunds<'info> {
     pub fund: Account<'info, Fund>,
 
@@ -475,6 +564,7 @@ pub struct FundCreated {
     pub authority: Pubkey,
     pub name: String,
     pub telegram_group_id: String,
+    pub platform_fee: u64,
 }
 
 #[event]
@@ -482,6 +572,7 @@ pub struct MemberJoined {
     pub fund: Pubkey,
     pub member: Pubkey,
     pub amount: u64,
+    pub platform_fee: u64,
     pub telegram_user_id: u64,
 }
 
@@ -529,6 +620,13 @@ pub struct FundsWithdrawn {
     pub fund: Pubkey,
     pub member: Pubkey,
     pub amount: u64,
+}
+
+#[event]
+pub struct SuccessFeeCollected {
+    pub fund: Pubkey,
+    pub profit_amount: u64,
+    pub fee_amount: u64,
 }
 
 // Error Codes

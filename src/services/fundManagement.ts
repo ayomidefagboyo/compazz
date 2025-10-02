@@ -1,5 +1,7 @@
-import { PublicKey, Connection, Transaction } from '@solana/web3.js';
+import { PublicKey, Connection, Transaction, Keypair } from '@solana/web3.js';
 import { telegramAuthService } from './telegramAuth';
+import SolanaFundsService from './solanaFunds';
+import { AnchorProvider, Wallet } from '@coral-xyz/anchor';
 
 export interface FundCreationRequest {
   name: string;
@@ -10,6 +12,7 @@ export interface FundCreationRequest {
   managementFee: number;
   performanceFee: number;
   creator: PublicKey;
+  creatorKeypair: Keypair; // Needed for signing transactions
   telegramOption: 'create_new' | 'use_existing';
   existingGroupId?: string;
   inviteLink?: string;
@@ -26,10 +29,21 @@ export interface FundCreationResult {
 class FundManagementService {
   private connection: Connection;
   private botApiUrl: string;
+  private solanaService: SolanaFundsService | null = null;
+  private programId: PublicKey;
 
   constructor() {
-    this.connection = new Connection(process.env.VITE_SOLANA_RPC_URL || 'https://api.devnet.solana.com');
-    this.botApiUrl = `https://api.telegram.org/bot${process.env.VITE_TELEGRAM_BOT_TOKEN}`;
+    this.connection = new Connection(import.meta.env?.VITE_SOLANA_RPC_URL || 'https://api.devnet.solana.com');
+    this.botApiUrl = `https://api.telegram.org/bot${import.meta.env?.VITE_TELEGRAM_BOT_TOKEN}`;
+    // Default program ID - in production this would be the deployed program
+    this.programId = new PublicKey('11111111111111111111111111111111');
+  }
+
+  private initializeSolanaService(wallet: any): SolanaFundsService {
+    if (!this.solanaService) {
+      this.solanaService = new SolanaFundsService(this.connection, wallet, this.programId);
+    }
+    return this.solanaService;
   }
 
   /**
@@ -189,36 +203,56 @@ class FundManagementService {
    */
   private async createOnChainFund(request: FundCreationRequest, telegramGroupId: string): Promise<{fundId: string, address: string, signature: string}> {
     try {
-      // In production, this would:
-      // 1. Create a new Program Derived Address (PDA) for the fund
-      // 2. Initialize fund account with metadata
-      // 3. Set up escrow accounts for contributions
-      // 4. Deploy fund management instructions
+      // Create a mock wallet for the creator
+      const wallet = {
+        publicKey: request.creator,
+        signTransaction: async (tx: Transaction) => {
+          tx.partialSign(request.creatorKeypair);
+          return tx;
+        },
+        signAllTransactions: async (txs: Transaction[]) => {
+          return txs.map(tx => {
+            tx.partialSign(request.creatorKeypair);
+            return tx;
+          });
+        }
+      };
 
-      // For now, simulate the process
-      const fundId = `fund_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const mockAddress = new PublicKey('11111111111111111111111111111111').toString();
-      const mockSignature = 'mock_transaction_signature';
+      // Initialize Solana service
+      const solanaService = this.initializeSolanaService(wallet);
 
-      // Simulate blockchain transaction delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Create the fund on-chain
+      const result = await solanaService.createFund(
+        request.name,
+        request.description,
+        request.strategy,
+        telegramGroupId,
+        request.minContribution,
+        request.maxMembers,
+        request.managementFee,
+        request.performanceFee,
+        request.creatorKeypair
+      );
+
+      const fundId = result.fundAddress.toString();
 
       console.log('Created on-chain fund:', {
         fundId,
-        address: mockAddress,
+        address: result.fundAddress.toString(),
         creator: request.creator.toString(),
-        telegramGroupId
+        telegramGroupId,
+        signature: result.signature
       });
 
       return {
         fundId,
-        address: mockAddress,
-        signature: mockSignature
+        address: result.fundAddress.toString(),
+        signature: result.signature
       };
 
     } catch (error) {
       console.error('Failed to create on-chain fund:', error);
-      throw new Error('Blockchain transaction failed. Please try again.');
+      throw new Error(`Blockchain transaction failed: ${error.message}`);
     }
   }
 

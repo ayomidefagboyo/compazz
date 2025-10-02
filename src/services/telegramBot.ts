@@ -1,4 +1,5 @@
-import { PublicKey } from '@solana/web3.js';
+import { PublicKey, Connection, Keypair } from '@solana/web3.js';
+import SolanaFundsService from './solanaFunds';
 
 export interface TelegramBotConfig {
   token: string;
@@ -25,12 +26,24 @@ class TelegramBotService {
   private config: TelegramBotConfig;
   private commands: Map<string, BotCommand>;
   private apiUrl: string;
+  private connection: Connection;
+  private solanaService: SolanaFundsService | null = null;
+  private programId: PublicKey;
 
   constructor(config: TelegramBotConfig) {
     this.config = config;
     this.commands = new Map();
     this.apiUrl = `https://api.telegram.org/bot${config.token}`;
+    this.connection = new Connection(import.meta.env?.VITE_SOLANA_RPC_URL || 'https://api.devnet.solana.com');
+    this.programId = new PublicKey('11111111111111111111111111111111'); // Default program ID
     this.setupDefaultCommands();
+  }
+
+  private initializeSolanaService(wallet: any): SolanaFundsService {
+    if (!this.solanaService) {
+      this.solanaService = new SolanaFundsService(this.connection, wallet, this.programId);
+    }
+    return this.solanaService;
   }
 
   /**
