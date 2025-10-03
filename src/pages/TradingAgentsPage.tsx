@@ -223,29 +223,6 @@ export function TradingAgentsPage() {
     <div className="min-h-screen bg-black">
       <div className="w-full px-6 lg:px-8 py-20">
         {/* Hero Section */}
-        <div className="mb-12 text-center mt-8">
-          <h1 className="text-4xl font-light text-white mb-4">
-            Trading <span className="text-accent">Agents</span>
-          </h1>
-          <div className="flex items-center justify-center space-x-8 text-sm text-light">
-            <div className="flex items-center space-x-2">
-              <Bot className="w-4 h-4 text-accent" />
-              <span>{agents.length} Individual Agents</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <MessageCircle className="w-4 h-4 text-accent" />
-              <span>{funds.length} Social Funds</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Users className="w-4 h-4" />
-              <span>{(agents.reduce((sum, a) => sum + a.subscribers, 0) + funds.reduce((sum, f) => sum + f.members, 0)).toLocaleString()} Total Members</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <DollarSign className="w-4 h-4" />
-              <span>{formatAUM(agents.reduce((sum, a) => sum + a.aum, 0) + funds.reduce((sum, f) => sum + f.totalAUM, 0))} Total AUM</span>
-            </div>
-          </div>
-        </div>
 
         {/* Category Filter */}
         <div className="mb-8">
@@ -746,20 +723,20 @@ function CreateFundModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-xl flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-gradient-to-b from-charcoal to-dark-gray border border-accent/20 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl shadow-accent/10" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="card max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between p-8 border-b border-accent/10">
+        <div className="flex items-center justify-between px-8 py-6 border-b border-border">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-accent/20 to-blue-600/20 border border-accent/30 rounded-2xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-accent/10 border border-accent/20 rounded-2xl flex items-center justify-center">
               <MessageCircle className="w-6 h-6 text-accent" />
             </div>
             <div>
               <h3 className="text-2xl font-light text-white">Create Fund</h3>
-              <p className="text-sm text-light mt-1">Launch your social trading collective</p>
+              <p className="text-light text-sm mt-1">Launch your social trading collective</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-light hover:text-accent transition-colors p-2 hover:bg-accent/10 rounded-xl">
+          <button onClick={onClose} className="text-light hover:text-white transition-colors p-2">
             <Plus className="w-6 h-6 rotate-45" />
           </button>
         </div>
@@ -808,15 +785,8 @@ function CreateFundModal({
           </div>
 
           {/* Fund Settings */}
-          <div className="border-t border-accent/10 pt-8">
-            <h4 className="text-xl font-medium text-white mb-6 flex items-center space-x-2">
-              <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
-                <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <span>Fund Settings</span>
-            </h4>
+          <div className="border-t border-border pt-6">
+            <h4 className="text-lg font-light text-white mb-4">Fund Settings</h4>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-light mb-2">Min Contribution (SOL)</label>
@@ -845,16 +815,8 @@ function CreateFundModal({
           </div>
 
           {/* Fee Structure */}
-          <div className="border-t border-accent/10 pt-8">
-            <h4 className="text-xl font-medium text-white mb-6 flex items-center space-x-2">
-              <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
-                <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd"/>
-                </svg>
-              </div>
-              <span>Fee Structure</span>
-            </h4>
+          <div className="border-t border-border pt-6">
+            <h4 className="text-lg font-light text-white mb-4">Fee Structure</h4>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-light mb-2">Management Fee (Annual)</label>
@@ -891,11 +853,9 @@ function CreateFundModal({
           </div>
 
           {/* Telegram Group Configuration */}
-          <div className="border-t border-accent/10 pt-8">
-            <h4 className="text-xl font-medium text-white mb-6 flex items-center space-x-2">
-              <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
-                <MessageCircle className="w-4 h-4 text-accent" />
-              </div>
+          <div className="border-t border-border pt-6">
+            <h4 className="text-lg font-light text-white mb-4 flex items-center space-x-2">
+              <MessageCircle className="w-5 h-5 text-accent" />
               <span>Telegram Group Setup</span>
             </h4>
 
@@ -965,13 +925,18 @@ function CreateFundModal({
           </div>
 
           {/* Fund Image */}
-          <div className="border-t border-accent/10 pt-8">
+          <div className="border-t border-border pt-6">
             <div className="flex items-center space-x-4">
-              <img
-                src={fundImage}
-                alt="Fund Avatar"
-                className="w-16 h-16 rounded-xl border border-accent/30 object-cover"
-              />
+              {fundImage !== 'https://via.placeholder.com/120x120/00ff88/000000?text=💰' && (
+                <>
+                  <img
+                    src={fundImage}
+                    alt="Fund Avatar"
+                    className="w-16 h-16 rounded-xl border border-accent/30 object-cover"
+                  />
+                  <div className="text-sm text-light">Fund Avatar</div>
+                </>
+              )}
 
               <div className="flex-1">
                 <button
@@ -979,7 +944,7 @@ function CreateFundModal({
                   onClick={() => document.getElementById('imageUpload')?.click()}
                   className="bg-dark-gray hover:bg-accent/10 border border-border hover:border-accent/30 text-white px-4 py-2 rounded-lg text-sm transition-all"
                 >
-                  Upload Image
+                  Upload Logo
                 </button>
                 <p className="text-xs text-light mt-1">JPG, PNG up to 5MB</p>
 
@@ -1002,36 +967,22 @@ function CreateFundModal({
           </div>
 
           {/* How it Works */}
-          <div className="bg-gradient-to-r from-accent/10 to-blue-600/10 border border-accent/20 rounded-2xl p-6">
-            <h5 className="text-accent font-medium mb-4 text-lg">How Social Funds Work</h5>
+          <div className="bg-accent/5 border border-accent/20 rounded-xl p-6">
+            <h5 className="text-accent font-medium mb-4">How Social Funds Work</h5>
             <ul className="text-sm text-light space-y-2">
-              <li className="flex items-start space-x-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0"></div>
-                <span>Creates a private Telegram group with your fund AI agent</span>
-              </li>
-              <li className="flex items-start space-x-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0"></div>
-                <span>Members join group and contribute SOL to shared fund</span>
-              </li>
-              <li className="flex items-start space-x-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0"></div>
-                <span>Group votes democratically on all trading decisions</span>
-              </li>
-              <li className="flex items-start space-x-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0"></div>
-                <span>Profits are distributed proportionally to contributions</span>
-              </li>
-              <li className="flex items-start space-x-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0"></div>
-                <span>You earn {managementFee}% management + {performanceFee}% performance fees</span>
-              </li>
+              <li>• Members join group and contribute SOL to shared fund</li>
+              <li>• You control the AI agent and decide what trades to make</li>
+              <li>• Members can suggest trades and vote based on their stake in the fund</li>
+              <li>• AI agent executes your trading decisions automatically</li>
+              <li>• Profits are distributed proportionally to contributions</li>
+              <li>• You earn {managementFee}% management + {performanceFee}% performance fees</li>
             </ul>
           </div>
 
           <button
             onClick={handleCreate}
             disabled={!fundName || !description || isCreating}
-            className="w-full bg-gradient-to-r from-accent to-blue-600 text-black py-4 rounded-2xl font-bold text-lg hover:from-accent/90 hover:to-blue-600/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-[1.02] duration-200"
+            className="w-full btn-primary py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isCreating ? 'Creating Fund...' : walletAddress ? 'Create Fund' : 'Connect Wallet & Create Fund'}
           </button>
