@@ -7,15 +7,8 @@ import { SolanaWalletConnectors } from '@dynamic-labs/solana';
 
 const dynamicEnvironmentId = import.meta.env.VITE_DYNAMIC_ENVIRONMENT_ID;
 
-// Enhanced logging for production debugging
-console.log('Dynamic Environment ID:', dynamicEnvironmentId ? 'Found' : 'Missing');
-console.log('Dynamic Environment ID Value:', dynamicEnvironmentId);
-console.log('Environment:', import.meta.env.MODE);
-console.log('All VITE env vars:', Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
-
 if (!dynamicEnvironmentId) {
-  console.error('CRITICAL: Missing VITE_DYNAMIC_ENVIRONMENT_ID in environment variables');
-  console.log('Available env vars:', Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
+  console.error('Missing VITE_DYNAMIC_ENVIRONMENT_ID in environment variables');
 }
 
 interface DynamicProviderProps {

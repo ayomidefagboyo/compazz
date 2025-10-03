@@ -276,17 +276,11 @@ export function TradingAgentsPage() {
             <span>Create Agent</span>
           </button>
           <button
-            onClick={() => {
-              if (!primaryWallet) {
-                setShowAuthFlow?.(true);
-              } else {
-                setShowCreateFund(true);
-              }
-            }}
+            onClick={() => setShowCreateFund(true)}
             className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors inline-flex items-center space-x-2"
           >
             <MessageCircle className="w-4 h-4" />
-            <span>{primaryWallet ? 'Create Fund' : 'Connect to Create Fund'}</span>
+            <span>Create Fund</span>
           </button>
         </div>
 
@@ -521,18 +515,20 @@ export function TradingAgentsPage() {
           )}
 
           {/* Create Fund Modal */}
-          {showCreateFund && primaryWallet && (
+          {showCreateFund && (
             <CreateFundModal
               isOpen={showCreateFund}
               onClose={() => setShowCreateFund(false)}
-              walletAddress={primaryWallet.address}
+              walletAddress={primaryWallet?.address}
               onCreateFund={async (name, description, strategy, minContribution, maxMembers, managementFee, performanceFee, telegramOption, existingGroupId, groupInviteLink) => {
-                if (!isTelegramAuthenticated) {
-                  await loginWithTelegram();
+                // Check wallet connection and prompt if needed
+                if (!primaryWallet?.address) {
+                  setShowAuthFlow?.(true);
+                  throw new Error('Please connect your wallet first');
                 }
 
-                if (!primaryWallet?.address) {
-                  throw new Error('Wallet not connected');
+                if (!isTelegramAuthenticated) {
+                  await loginWithTelegram();
                 }
 
                 // Import the new fund management service
@@ -694,12 +690,12 @@ function CreateFundModal({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  walletAddress: string;
+  walletAddress?: string;
   onCreateFund: (name: string, description: string, strategy: string, minContribution: number, maxMembers: number, managementFee: number, performanceFee: number, telegramOption: 'create_new' | 'use_existing', existingGroupId?: string, groupInviteLink?: string) => Promise<string>;
 }) {
   const [fundName, setFundName] = useState('');
   const [description, setDescription] = useState('');
-  const [strategy, setStrategy] = useState('Whale Tracking');
+  const [strategy, setStrategy] = useState('Mixed Strategy');
   const [minContribution, setMinContribution] = useState(10);
   const [maxMembers, setMaxMembers] = useState(50);
   const [managementFee, setManagementFee] = useState(2.0);
@@ -708,6 +704,7 @@ function CreateFundModal({
   const [telegramOption, setTelegramOption] = useState<'create_new' | 'use_existing'>('create_new');
   const [existingGroupId, setExistingGroupId] = useState('');
   const [groupInviteLink, setGroupInviteLink] = useState('');
+  const [fundImage, setFundImage] = useState<string>('https://via.placeholder.com/120x120/00ff88/000000?text=💰');
 
   const handleCreate = async () => {
     if (!fundName || !description) return;
@@ -730,7 +727,7 @@ function CreateFundModal({
       // Reset form
       setFundName('');
       setDescription('');
-      setStrategy('Whale Tracking');
+      setStrategy('Mixed Strategy');
       setMinContribution(10);
       setMaxMembers(50);
       setManagementFee(2.0);
@@ -738,6 +735,7 @@ function CreateFundModal({
       setTelegramOption('create_new');
       setExistingGroupId('');
       setGroupInviteLink('');
+      setFundImage('https://via.placeholder.com/120x120/00ff88/000000?text=💰');
     } catch (error) {
       console.error('Failed to create fund:', error);
     } finally {
@@ -748,29 +746,26 @@ function CreateFundModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-charcoal border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-xl flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-gradient-to-b from-charcoal to-dark-gray border border-accent/20 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl shadow-accent/10" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-600/10 border border-blue-600/20 rounded-xl flex items-center justify-center">
-              <MessageCircle className="w-5 h-5 text-blue-400" />
+        <div className="flex items-center justify-between p-8 border-b border-accent/10">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-accent/20 to-blue-600/20 border border-accent/30 rounded-2xl flex items-center justify-center">
+              <MessageCircle className="w-6 h-6 text-accent" />
             </div>
-            <h3 className="text-xl font-light text-white">Create Fund</h3>
+            <div>
+              <h3 className="text-2xl font-light text-white">Create Fund</h3>
+              <p className="text-sm text-light mt-1">Launch your social trading collective</p>
+            </div>
           </div>
-          <button onClick={onClose} className="text-light hover:text-white transition-colors">
-            <Plus className="w-5 h-5 rotate-45" />
+          <button onClick={onClose} className="text-light hover:text-accent transition-colors p-2 hover:bg-accent/10 rounded-xl">
+            <Plus className="w-6 h-6 rotate-45" />
           </button>
         </div>
 
         {/* Form */}
-        <div className="p-6 space-y-6">
-          {/* Wallet Info */}
-          <div className="bg-dark-gray border border-border rounded-lg p-4">
-            <div className="text-xs text-light mb-1">Fund Creator (Your Wallet)</div>
-            <div className="text-sm text-white font-mono truncate">{walletAddress}</div>
-          </div>
-
+        <div className="p-8 space-y-8">
           {/* Basic Info */}
           <div className="space-y-4">
             <div>
@@ -813,8 +808,15 @@ function CreateFundModal({
           </div>
 
           {/* Fund Settings */}
-          <div className="border-t border-border pt-6">
-            <h4 className="text-lg font-medium text-white mb-4">Fund Settings</h4>
+          <div className="border-t border-accent/10 pt-8">
+            <h4 className="text-xl font-medium text-white mb-6 flex items-center space-x-2">
+              <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <span>Fund Settings</span>
+            </h4>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-light mb-2">Min Contribution (SOL)</label>
@@ -843,8 +845,16 @@ function CreateFundModal({
           </div>
 
           {/* Fee Structure */}
-          <div className="border-t border-border pt-6">
-            <h4 className="text-lg font-medium text-white mb-4">Fee Structure</h4>
+          <div className="border-t border-accent/10 pt-8">
+            <h4 className="text-xl font-medium text-white mb-6 flex items-center space-x-2">
+              <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd"/>
+                </svg>
+              </div>
+              <span>Fee Structure</span>
+            </h4>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-light mb-2">Management Fee (Annual)</label>
@@ -881,9 +891,11 @@ function CreateFundModal({
           </div>
 
           {/* Telegram Group Configuration */}
-          <div className="border-t border-border pt-6">
-            <h4 className="text-lg font-medium text-white mb-4 flex items-center space-x-2">
-              <MessageCircle className="w-5 h-5 text-blue-400" />
+          <div className="border-t border-accent/10 pt-8">
+            <h4 className="text-xl font-medium text-white mb-6 flex items-center space-x-2">
+              <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
+                <MessageCircle className="w-4 h-4 text-accent" />
+              </div>
               <span>Telegram Group Setup</span>
             </h4>
 
@@ -900,7 +912,7 @@ function CreateFundModal({
                   />
                   <div>
                     <div className="text-white font-medium">Create New Group</div>
-                    <div className="text-sm text-light">Bot will create a new Telegram group for your fund</div>
+                    <div className="text-sm text-light">AI agent will create a new Telegram group for your fund</div>
                   </div>
                 </label>
 
@@ -952,24 +964,76 @@ function CreateFundModal({
             </div>
           </div>
 
+          {/* Fund Image */}
+          <div className="border-t border-accent/10 pt-8">
+            <div className="flex items-center space-x-4">
+              <img
+                src={fundImage}
+                alt="Fund Avatar"
+                className="w-16 h-16 rounded-xl border border-accent/30 object-cover"
+              />
+
+              <div className="flex-1">
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('imageUpload')?.click()}
+                  className="bg-dark-gray hover:bg-accent/10 border border-border hover:border-accent/30 text-white px-4 py-2 rounded-lg text-sm transition-all"
+                >
+                  Upload Image
+                </button>
+                <p className="text-xs text-light mt-1">JPG, PNG up to 5MB</p>
+
+                <input
+                  id="imageUpload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (e) => setFundImage(e.target?.result as string);
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
           {/* How it Works */}
-          <div className="bg-blue-600/10 border border-blue-600/20 rounded-lg p-4">
-            <h5 className="text-blue-400 font-medium mb-2">How Social Funds Work</h5>
-            <ul className="text-xs text-light space-y-1">
-              <li>• Creates a private Telegram group with your fund bot</li>
-              <li>• Members join group and contribute SOL to shared fund</li>
-              <li>• Group votes democratically on all trading decisions</li>
-              <li>• Profits are distributed proportionally to contributions</li>
-              <li>• You earn {managementFee}% management + {performanceFee}% performance fees</li>
+          <div className="bg-gradient-to-r from-accent/10 to-blue-600/10 border border-accent/20 rounded-2xl p-6">
+            <h5 className="text-accent font-medium mb-4 text-lg">How Social Funds Work</h5>
+            <ul className="text-sm text-light space-y-2">
+              <li className="flex items-start space-x-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0"></div>
+                <span>Creates a private Telegram group with your fund AI agent</span>
+              </li>
+              <li className="flex items-start space-x-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0"></div>
+                <span>Members join group and contribute SOL to shared fund</span>
+              </li>
+              <li className="flex items-start space-x-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0"></div>
+                <span>Group votes democratically on all trading decisions</span>
+              </li>
+              <li className="flex items-start space-x-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0"></div>
+                <span>Profits are distributed proportionally to contributions</span>
+              </li>
+              <li className="flex items-start space-x-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-accent mt-2 flex-shrink-0"></div>
+                <span>You earn {managementFee}% management + {performanceFee}% performance fees</span>
+              </li>
             </ul>
           </div>
 
           <button
             onClick={handleCreate}
             disabled={!fundName || !description || isCreating}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-accent to-blue-600 text-black py-4 rounded-2xl font-bold text-lg hover:from-accent/90 hover:to-blue-600/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-[1.02] duration-200"
           >
-            {isCreating ? 'Creating Fund...' : 'Create Fund'}
+            {isCreating ? 'Creating Fund...' : walletAddress ? 'Create Fund' : 'Connect Wallet & Create Fund'}
           </button>
         </div>
       </div>
