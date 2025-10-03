@@ -7,7 +7,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
-  define: {
-    __WS_TOKEN__: JSON.stringify(''),
-  },
+  // Fixed: Use environment variables instead of global defines to avoid syntax errors
+  // The previous __WS_TOKEN__ pattern was causing Vite to generate malformed code
+  // Environment variables are safer and don't cause string replacement issues
 });
